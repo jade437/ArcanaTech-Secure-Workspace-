@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patching Process Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #FF4500;
+            --secondary: #FF6347;
+            --accent: #4CAF50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --dark: #333;
+            --light: #fff;
+            --card-bg: rgba(255, 255, 255, 0.15);
+            --hover-bg: rgba(255, 255, 255, 0.25);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #FF4500, #FF6347); }
+            50% { background: linear-gradient(to right, #FF8C00, #FFA07A); }
+            100% { background: linear-gradient(to right, #FF4500, #FF6347); }
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-container:hover {
+            transform: scale(1.01);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background-color: rgba(76, 175, 80, 0.7);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .dashboard-card:hover {
+            background-color: var(--hover-bg);
+            transform: translateY(-5px);
+        }
+
+        .dashboard-card h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .metric {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .feature-card:hover {
+            background-color: var(--hover-bg);
+            transform: translateY(-5px);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card p {
+            margin-bottom: 15px;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: 600;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .button.secondary {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .button.secondary:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .button.warning {
+            background-color: var(--warning);
+        }
+
+        .button.warning:hover {
+            background-color: #e68900;
+        }
+
+        .button.danger {
+            background-color: var(--danger);
+        }
+
+        .button.danger:hover {
+            background-color: #d32f2f;
+        }
+
+        /* Patch Schedule */
+        .patch-schedule {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--card-bg);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .schedule-list {
+            text-align: left;
+        }
+
+        .schedule-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patch-info {
+            flex-grow: 1;
+        }
+
+        .patch-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .patch-meta {
+            font-size: 0.9em;
+            opacity: 0.8;
+            display: flex;
+            gap: 15px;
+        }
+
+        .patch-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-critical {
+            background-color: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        .status-high {
+            background-color: var(--warning);
+        }
+
+        .status-medium {
+            background-color: #ffc107;
+        }
+
+        .status-low {
+            background-color: var(--accent);
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--accent);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Patch Details Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 80%;
+            }
+            
+            .schedule-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .patch-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1><i class="fas fa-shield-alt"></i> Patching Process Management</h1>
+        <p class="subtitle">Manage and schedule security patches to keep your systems protected</p>
+        
+        <!-- Dashboard Metrics -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <h3><i class="fas fa-exclamation-triangle"></i> Critical Patches</h3>
+                <div class="metric" id="criticalPatches">12</div>
+                <div class="metric-label">Require Immediate Attention</div>
+            </div>
+            <div class="dashboard-card">
+                <h3><i class="fas fa-clock"></i> Pending Patches</h3>
+                <div class="metric" id="pendingPatches">47</div>
+                <div class="metric-label">Scheduled for Deployment</div>
+            </div>
+            <div class="dashboard-card">
+                <h3><i class="fas fa-check-circle"></i> Applied Patches</h3>
+                <div class="metric" id="appliedPatches">128</div>
+                <div class="metric-label">Successfully Installed</div>
+            </div>
+            <div class="dashboard-card">
+                <h3><i class="fas fa-server"></i> Systems Patched</h3>
+                <div class="metric" id="systemsPatched">84%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 84%"></div>
+                </div>
+                <div class="metric-label">145 of 172 Systems</div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="overview">
+                <i class="fas fa-tachometer-alt"></i> Overview
+            </div>
+            <div class="tab" data-tab="critical">
+                <i class="fas fa-exclamation-triangle"></i> Critical Patches
+            </div>
+            <div class="tab" data-tab="scheduled">
+                <i class="fas fa-calendar-alt"></i> Scheduled Patches
+            </div>
+            <div class="tab" data-tab="history">
+                <i class="fas fa-history"></i> Patch History
+            </div>
+            <div class="tab" data-tab="reports">
+                <i class="fas fa-chart-bar"></i> Reports
+            </div>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview-tab">
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    <p>Perform common patching tasks with a single click</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                        <button class="button" onclick="scanForPatches()">
+                            <i class="fas fa-search"></i> Scan for New Patches
+                        </button>
+                        <button class="button secondary" onclick="deployPendingPatches()">
+                            <i class="fas fa-rocket"></i> Deploy All Pending Patches
+                        </button>
+                        <button class="button warning" onclick="generateReport()">
+                            <i class="fas fa-file-pdf"></i> Generate Compliance Report
+                        </button>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-chart-pie"></i> Patch Distribution</h3>
+                    <p>Visual breakdown of patches by severity and status</p>
+                    <div class="chart-container">
+                        <canvas id="patchDistributionChart"></canvas>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-tasks"></i> Recent Activity</h3>
+                    <p>Latest patching operations and system updates</p>
+                    <div id="recentActivity" style="margin-top: 15px;">
+                        <div class="schedule-item">
+                            <div class="patch-info">
+                                <div class="patch-title">Security Update KB5005565</div>
+                                <div class="patch-meta">
+                                    <span><i class="fas fa-server"></i> 24 systems</span>
+                                    <span><i class="fas fa-clock"></i> 2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="patch-actions">
+                                <span class="status-indicator status-critical"></span>
+                                <span>Applied</span>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="patch-info">
+                                <div class="patch-title">Adobe Flash Player Update</div>
+                                <div class="patch-meta">
+                                    <span><i class="fas fa-server"></i> 18 systems</span>
+                                    <span><i class="fas fa-clock"></i> 5 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="patch-actions">
+                                <span class="status-indicator status-high"></span>
+                                <span>Applied</span>
+                            </div>
+                        </div>
+                        <div class="schedule-item">
+                            <div class="patch-info">
+                                <div class="patch-title">Java Runtime Update</div>
+                                <div class="patch-meta">
+                                    <span><i class="fas fa-server"></i> 32 systems</span>
+                                    <span><i class="fas fa-clock"></i> 1 day ago</span>
+                                </div>
+                            </div>
+                            <div class="patch-actions">
+                                <span class="status-indicator status-medium"></span>
+                                <span>Applied</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Patch Schedule -->
+            <div class="patch-schedule">
+                <div class="schedule-header">
+                    <h2><i class="fas fa-calendar-check"></i> Upcoming Patch Schedule</h2>
+                    <button class="button secondary" onclick="openSchedulingModal()">
+                        <i class="fas fa-plus"></i> Schedule New Patch
+                    </button>
+                </div>
+                <div class="schedule-list" id="upcomingPatches">
+                    <!-- Upcoming patches will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Critical Patches Tab -->
+        <div class="tab-content" id="critical-tab">
+            <h2>Critical Security Patches</h2>
+            <p>These patches address severe vulnerabilities and should be applied immediately</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-bug"></i> Zero-Day Vulnerabilities</h3>
+                    <p>Patches for actively exploited vulnerabilities</p>
+                    <div id="zeroDayPatches" class="schedule-list" style="margin-top: 15px;">
+                        <!-- Zero-day patches will be populated here -->
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-fire"></i> High Severity Patches</h3>
+                    <p>Critical updates that should be deployed within 24 hours</p>
+                    <div id="highSeverityPatches" class="schedule-list" style="margin-top: 15px;">
+                        <!-- High severity patches will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <button class="button danger" onclick="deployCriticalPatches()">
+                <i class="fas fa-bolt"></i> Deploy All Critical Patches Now
+            </button>
+        </div>
+        
+        <!-- Scheduled Patches Tab -->
+        <div class="tab-content" id="scheduled-tab">
+            <h2>Scheduled Patch Deployment</h2>
+            <p>Manage and monitor upcoming patch deployments</p>
+            
+            <div class="chart-container">
+                <canvas id="deploymentTimelineChart"></canvas>
+            </div>
+            
+            <div class="patch-schedule">
+                <div class="schedule-header">
+                    <h3>All Scheduled Patches</h3>
+                    <div>
+                        <button class="button secondary" onclick="rescheduleAll()">
+                            <i class="fas fa-calendar-alt"></i> Reschedule All
+                        </button>
+                        <button class="button" onclick="deployAllScheduled()">
+                            <i class="fas fa-play-circle"></i> Deploy All Now
+                        </button>
+                    </div>
+                </div>
+                <div class="schedule-list" id="allScheduledPatches">
+                    <!-- All scheduled patches will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Patch History Tab -->
+        <div class="tab-content" id="history-tab">
+            <h2>Patch Deployment History</h2>
+            <p>Complete record of all applied patches and their status</p>
+            
+            <div class="chart-container">
+                <canvas id="patchHistoryChart"></canvas>
+            </div>
+            
+            <div class="patch-schedule">
+                <div class="schedule-header">
+                    <h3>Recent Patch Activity</h3>
+                    <button class="button secondary" onclick="exportHistory()">
+                        <i class="fas fa-download"></i> Export History
+                    </button>
+                </div>
+                <div class="schedule-list" id="patchHistory">
+                    <!-- Patch history will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div class="tab-content" id="reports-tab">
+            <h2>Patching Reports & Analytics</h2>
+            <p>Comprehensive reports on patch compliance and deployment effectiveness</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-chart-line"></i> Compliance Trends</h3>
+                    <p>Track patch compliance over time</p>
+                    <div class="chart-container">
+                        <canvas id="complianceChart"></canvas>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-clock"></i> Deployment Performance</h3>
+                    <p>Average time to deploy patches by severity</p>
+                    <div class="chart-container">
+                        <canvas id="deploymentPerformanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="patch-schedule">
+                <div class="schedule-header">
+                    <h3>Generate Custom Reports</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                    <button class="button secondary" onclick="generateComplianceReport()">
+                        <i class="fas fa-file-alt"></i> Compliance Report
+                    </button>
+                    <button class="button secondary" onclick="generateSecurityReport()">
+                        <i class="fas fa-shield-alt"></i> Security Posture Report
+                    </button>
+                    <button class="button secondary" onclick="generatePerformanceReport()">
+                        <i class="fas fa-tachometer-alt"></i> Performance Report
+                    </button>
+                    <button class="button" onclick="generateExecutiveReport()">
+                        <i class="fas fa-chart-bar"></i> Executive Summary
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scheduling Modal -->
+    <div class="modal" id="schedulingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Schedule New Patch Deployment</h2>
+                <button class="close-modal" onclick="closeSchedulingModal()">&times;</button>
+            </div>
+            <form id="patchScheduleForm">
+                <div style="display: grid; gap: 15px;">
+                    <div>
+                        <label for="patchName">Patch Name</label>
+                        <input type="text" id="patchName" style="width: 100%; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    </div>
+                    <div>
+                        <label for="patchDescription">Description</label>
+                        <textarea id="patchDescription" rows="3" style="width: 100%; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);"></textarea>
+                    </div>
+                    <div>
+                        <label for="patchSeverity">Severity</label>
+                        <select id="patchSeverity" style="width: 100%; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="scheduleDate">Deployment Date</label>
+                        <input type="datetime-local" id="scheduleDate" style="width: 100%; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    </div>
+                    <div>
+                        <label for="affectedSystems">Affected Systems</label>
+                        <input type="number" id="affectedSystems" min="1" value="1" style="width: 100%; padding: 10px; border-radius: 6px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3);">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="button secondary" onclick="closeSchedulingModal()">Cancel</button>
+                    <button type="submit" class="button">Schedule Patch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        const appState = {
+            patches: [],
+            scheduledPatches: [],
+            appliedPatches: [],
+            criticalPatches: [],
+            systems: 172,
+            patchedSystems: 145
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTabs();
+            initializeCharts();
+            generateSampleData();
+            updateDashboard();
+            renderUpcomingPatches();
+            renderCriticalPatches();
+            renderScheduledPatches();
+            renderPatchHistory();
+        });
+
+        // Tab functionality
+        function initializeTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Show selected tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Patch Distribution Chart
+            const distributionCtx = document.getElementById('patchDistributionChart').getContext('2d');
+            window.patchDistributionChart = new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [12, 24, 35, 29],
+                        backgroundColor: [
+                            'rgba(244, 67, 54, 0.7)',
+                            'rgba(255, 152, 0, 0.7)',
+                            'rgba(255, 193, 7, 0.7)',
+                            'rgba(76, 175, 80, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(244, 67, 54, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(76, 175, 80, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Deployment Timeline Chart
+            const timelineCtx = document.getElementById('deploymentTimelineChart').getContext('2d');
+            window.deploymentTimelineChart = new Chart(timelineCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Today', 'Tomorrow', 'Nov 20', 'Nov 21', 'Nov 22', 'Nov 23', 'Nov 24'],
+                    datasets: [{
+                        label: 'Patches Scheduled',
+                        data: [5, 8, 12, 7, 9, 4, 2],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Patch History Chart
+            const historyCtx = document.getElementById('patchHistoryChart').getContext('2d');
+            window.patchHistoryChart = new Chart(historyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Oct 1', 'Oct 8', 'Oct 15', 'Oct 22', 'Oct 29', 'Nov 5', 'Nov 12'],
+                    datasets: [{
+                        label: 'Patches Applied',
+                        data: [18, 24, 16, 32, 28, 35, 42],
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Compliance Chart
+            const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+            window.complianceChart = new Chart(complianceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Sep', 'Oct', 'Nov'],
+                    datasets: [{
+                        label: 'Patch Compliance %',
+                        data: [72, 78, 84],
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 50,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Deployment Performance Chart
+            const performanceCtx = document.getElementById('deploymentPerformanceChart').getContext('2d');
+            window.deploymentPerformanceChart = new Chart(performanceCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        label: 'Avg. Deployment Time (hours)',
+                        data: [4.2, 12.5, 36.8, 72.4],
+                        backgroundColor: [
+                            'rgba(244, 67, 54, 0.7)',
+                            'rgba(255, 152, 0, 0.7)',
+                            'rgba(255, 193, 7, 0.7)',
+                            'rgba(76, 175, 80, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(244, 67, 54, 1)',
+                            'rgba(255, 152, 0, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(76, 175, 80, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generate Sample Data
+        function generateSampleData() {
+            // Generate sample patches
+            appState.patches = [
+                { id: 1, name: 'Security Update KB5005565', severity: 'critical', status: 'pending', systems: 24, schedule: new Date(Date.now() + 86400000) },
+                { id: 2, name: 'Adobe Flash Player Update', severity: 'high', status: 'pending', systems: 18, schedule: new Date(Date.now() + 172800000) },
+                { id: 3, name: 'Java Runtime Update', severity: 'medium', status: 'pending', systems: 32, schedule: new Date(Date.now() + 259200000) },
+                { id: 4, name: 'Windows Defender Update', severity: 'critical', status: 'pending', systems: 45, schedule: new Date(Date.now() + 86400000) },
+                { id: 5, name: 'Office 365 Security Patch', severity: 'high', status: 'pending', systems: 28, schedule: new Date(Date.now() + 345600000) }
+            ];
+
+            // Generate sample applied patches
+            appState.appliedPatches = [
+                { id: 101, name: '.NET Framework Update', severity: 'medium', status: 'applied', systems: 36, appliedDate: new Date(Date.now() - 86400000) },
+                { id: 102, name: 'Chrome Browser Update', severity: 'high', status: 'applied', systems: 42, appliedDate: new Date(Date.now() - 172800000) },
+                { id: 103, name: 'Windows Cumulative Update', severity: 'critical', status: 'applied', systems: 52, appliedDate: new Date(Date.now() - 259200000) }
+            ];
+
+            // Extract critical patches
+            appState.criticalPatches = appState.patches.filter(patch => patch.severity === 'critical');
+            
+            // Extract scheduled patches
+            appState.scheduledPatches = [...appState.patches];
+        }
+
+        // Update Dashboard Metrics
+        function updateDashboard() {
+            document.getElementById('criticalPatches').textContent = appState.criticalPatches.length;
+            document.getElementById('pendingPatches').textContent = appState.patches.length;
+            document.getElementById('appliedPatches').textContent = appState.appliedPatches.length;
+            
+            const patchedPercentage = Math.round((appState.patchedSystems / appState.systems) * 100);
+            document.getElementById('systemsPatched').textContent = `${patchedPercentage}%`;
+            document.querySelector('.progress-fill').style.width = `${patchedPercentage}%`;
+        }
+
+        // Render Upcoming Patches
+        function renderUpcomingPatches() {
+            const container = document.getElementById('upcomingPatches');
+            container.innerHTML = '';
+            
+            if (appState.scheduledPatches.length === 0) {
+                container.innerHTML = '<p>No patches scheduled for deployment.</p>';
+                return;
+            }
+            
+            appState.scheduledPatches.forEach(patch => {
+                const patchItem = document.createElement('div');
+                patchItem.className = 'schedule-item';
+                
+                const scheduleDate = patch.schedule.toLocaleDateString();
+                const severityClass = `status-${patch.severity}`;
+                
+                patchItem.innerHTML = `
+                    <div class="patch-info">
+                        <div class="patch-title">${patch.name}</div>
+                        <div class="patch-meta">
+                            <span><i class="fas fa-server"></i> ${patch.systems} systems</span>
+                            <span><i class="fas fa-calendar"></i> ${scheduleDate}</span>
+                            <span><i class="fas fa-exclamation-circle"></i> ${patch.severity.charAt(0).toUpperCase() + patch.severity.slice(1)}</span>
+                        </div>
+                    </div>
+                    <div class="patch-actions">
+                        <span class="status-indicator ${severityClass}"></span>
+                        <button class="button secondary" onclick="deployPatch(${patch.id})">Deploy Now</button>
+                        <button class="button warning" onclick="reschedulePatch(${patch.id})">Reschedule</button>
+                    </div>
+                `;
+                
+                container.appendChild(patchItem);
+            });
+        }
+
+        // Render Critical Patches
+        function renderCriticalPatches() {
+            const zeroDayContainer = document.getElementById('zeroDayPatches');
+            const highSeverityContainer = document.getElementById('highSeverityPatches');
+            
+            zeroDayContainer.innerHTML = '';
+            highSeverityContainer.innerHTML = '';
+            
+            const zeroDayPatches = appState.criticalPatches.filter(p => p.name.includes('KB5005565') || p.name.includes('Windows Defender'));
+            const highSeverityPatches = appState.patches.filter(p => p.severity === 'high');
+            
+            if (zeroDayPatches.length === 0) {
+                zeroDayContainer.innerHTML = '<p>No zero-day vulnerabilities detected.</p>';
+            } else {
+                zeroDayPatches.forEach(patch => {
+                    const patchItem = createPatchItem(patch, true);
+                    zeroDayContainer.appendChild(patchItem);
+                });
+            }
+            
+            if (highSeverityPatches.length === 0) {
+                highSeverityContainer.innerHTML = '<p>No high severity patches pending.</p>';
+            } else {
+                highSeverityPatches.forEach(patch => {
+                    const patchItem = createPatchItem(patch, true);
+                    highSeverityContainer.appendChild(patchItem);
+                });
+            }
+        }
+
+        // Render Scheduled Patches
+        function renderScheduledPatches() {
+            const container = document.getElementById('allScheduledPatches');
+            container.innerHTML = '';
+            
+            if (appState.scheduledPatches.length === 0) {
+                container.innerHTML = '<p>No patches scheduled for deployment.</p>';
+                return;
+            }
+            
+            appState.scheduledPatches.forEach(patch => {
+                const patchItem = createPatchItem(patch, false);
+                container.appendChild(patchItem);
+            });
+        }
+
+        // Render Patch History
+        function renderPatchHistory() {
+            const container = document.getElementById('patchHistory');
+            container.innerHTML = '';
+            
+            if (appState.appliedPatches.length === 0) {
+                container.innerHTML = '<p>No patch history available.</p>';
+                return;
+            }
+            
+            // Sort by applied date (newest first)
+            const sortedPatches = [...appState.appliedPatches].sort((a, b) => b.appliedDate - a.appliedDate);
+            
+            sortedPatches.forEach(patch => {
+                const patchItem = document.createElement('div');
+                patchItem.className = 'schedule-item';
+                
+                const appliedDate = patch.appliedDate.toLocaleDateString();
+                const severityClass = `status-${patch.severity}`;
+                
+                patchItem.innerHTML = `
+                    <div class="patch-info">
+                        <div class="patch-title">${patch.name}</div>
+                        <div class="patch-meta">
+                            <span><i class="fas fa-server"></i> ${patch.systems} systems</span>
+                            <span><i class="fas fa-calendar"></i> Applied: ${appliedDate}</span>
+                            <span><i class="fas fa-exclamation-circle"></i> ${patch.severity.charAt(0).toUpperCase() + patch.severity.slice(1)}</span>
+                        </div>
+                    </div>
+                    <div class="patch-actions">
+                        <span class="status-indicator ${severityClass}"></span>
+                        <span style="color: #4CAF50;"><i class="fas fa-check-circle"></i> Applied</span>
+                    </div>
+                `;
+                
+                container.appendChild(patchItem);
+            });
+        }
+
+        // Create a patch item element
+        function createPatchItem(patch, showDeployButton = true) {
+            const patchItem = document.createElement('div');
+            patchItem.className = 'schedule-item';
+            
+            const scheduleDate = patch.schedule.toLocaleDateString();
+            const severityClass = `status-${patch.severity}`;
+            
+            let actionsHTML = '';
+            if (showDeployButton) {
+                actionsHTML = `<button class="button" onclick="deployPatch(${patch.id})">Deploy Now</button>`;
+            }
+            
+            patchItem.innerHTML = `
+                <div class="patch-info">
+                    <div class="patch-title">${patch.name}</div>
+                    <div class="patch-meta">
+                        <span><i class="fas fa-server"></i> ${patch.systems} systems</span>
+                        <span><i class="fas fa-calendar"></i> ${scheduleDate}</span>
+                        <span><i class="fas fa-exclamation-circle"></i> ${patch.severity.charAt(0).toUpperCase() + patch.severity.slice(1)}</span>
+                    </div>
+                </div>
+                <div class="patch-actions">
+                    <span class="status-indicator ${severityClass}"></span>
+                    ${actionsHTML}
+                    <button class="button secondary" onclick="viewPatchDetails(${patch.id})">Details</button>
+                </div>
+            `;
+            
+            return patchItem;
+        }
+
+        // Modal Functions
+        function openSchedulingModal() {
+            document.getElementById('schedulingModal').style.display = 'flex';
+        }
+
+        function closeSchedulingModal() {
+            document.getElementById('schedulingModal').style.display = 'none';
+            document.getElementById('patchScheduleForm').reset();
+        }
+
+        // Form submission for scheduling
+        document.getElementById('patchScheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const patchName = document.getElementById('patchName').value;
+            const patchDescription = document.getElementById('patchDescription').value;
+            const patchSeverity = document.getElementById('patchSeverity').value;
+            const scheduleDate = document.getElementById('scheduleDate').value;
+            const affectedSystems = document.getElementById('affectedSystems').value;
+            
+            // Create new patch
+            const newPatch = {
+                id: Date.now(), // Simple ID generation
+                name: patchName,
+                description: patchDescription,
+                severity: patchSeverity,
+                status: 'pending',
+                systems: parseInt(affectedSystems),
+                schedule: new Date(scheduleDate)
+            };
+            
+            // Add to patches
+            appState.patches.push(newPatch);
+            appState.scheduledPatches.push(newPatch);
+            
+            // Update critical patches if applicable
+            if (patchSeverity === 'critical') {
+                appState.criticalPatches.push(newPatch);
+            }
+            
+            // Update UI
+            renderUpcomingPatches();
+            renderCriticalPatches();
+            renderScheduledPatches();
+            updateDashboard();
+            
+            // Close modal and show confirmation
+            closeSchedulingModal();
+            showNotification(`Patch "${patchName}" scheduled successfully!`);
+        });
+
+        // Patch Deployment Functions
+        function deployPatch(patchId) {
+            const patchIndex = appState.patches.findIndex(p => p.id === patchId);
+            if (patchIndex === -1) return;
+            
+            const patch = appState.patches[patchIndex];
+            
+            // Show deployment in progress
+            showNotification(`Deploying ${patch.name} to ${patch.systems} systems...`);
+            
+            // Simulate deployment delay
+            setTimeout(() => {
+                // Move patch from pending to applied
+                appState.patches.splice(patchIndex, 1);
+                patch.status = 'applied';
+                patch.appliedDate = new Date();
+                appState.appliedPatches.push(patch);
+                
+                // Update scheduled patches
+                const scheduledIndex = appState.scheduledPatches.findIndex(p => p.id === patchId);
+                if (scheduledIndex !== -1) {
+                    appState.scheduledPatches.splice(scheduledIndex, 1);
+                }
+                
+                // Update critical patches if applicable
+                if (patch.severity === 'critical') {
+                    const criticalIndex = appState.criticalPatches.findIndex(p => p.id === patchId);
+                    if (criticalIndex !== -1) {
+                        appState.criticalPatches.splice(criticalIndex, 1);
+                    }
+                }
+                
+                // Update patched systems count
+                appState.patchedSystems = Math.min(appState.systems, appState.patchedSystems + patch.systems);
+                
+                // Update UI
+                renderUpcomingPatches();
+                renderCriticalPatches();
+                renderScheduledPatches();
+                renderPatchHistory();
+                updateDashboard();
+                
+                showNotification(`Successfully deployed ${patch.name}!`);
+            }, 2000);
+        }
+
+        function deployCriticalPatches() {
+            if (appState.criticalPatches.length === 0) {
+                showNotification('No critical patches to deploy.');
+                return;
+            }
+            
+            showNotification(`Deploying ${appState.criticalPatches.length} critical patches...`);
+            
+            // Deploy all critical patches
+            const criticalPatchIds = appState.criticalPatches.map(p => p.id);
+            criticalPatchIds.forEach(id => {
+                setTimeout(() => deployPatch(id), Math.random() * 3000);
+            });
+        }
+
+        function deployPendingPatches() {
+            if (appState.patches.length === 0) {
+                showNotification('No pending patches to deploy.');
+                return;
+            }
+            
+            showNotification(`Deploying ${appState.patches.length} pending patches...`);
+            
+            // Deploy all patches
+            const patchIds = appState.patches.map(p => p.id);
+            patchIds.forEach(id => {
+                setTimeout(() => deployPatch(id), Math.random() * 3000);
+            });
+        }
+
+        function deployAllScheduled() {
+            if (appState.scheduledPatches.length === 0) {
+                showNotification('No scheduled patches to deploy.');
+                return;
+            }
+            
+            showNotification(`Deploying ${appState.scheduledPatches.length} scheduled patches...`);
+            
+            // Deploy all scheduled patches
+            const scheduledPatchIds = appState.scheduledPatches.map(p => p.id);
+            scheduledPatchIds.forEach(id => {
+                setTimeout(() => deployPatch(id), Math.random() * 3000);
+            });
+        }
+
+        // Rescheduling Functions
+        function reschedulePatch(patchId) {
+            const patch = appState.patches.find(p => p.id === patchId);
+            if (!patch) return;
+            
+            // In a real application, this would open a rescheduling dialog
+            // For this demo, we'll just move it forward by 3 days
+            patch.schedule = new Date(patch.schedule.getTime() + (3 * 24 * 60 * 60 * 1000));
+            
+            renderUpcomingPatches();
+            renderScheduledPatches();
+            
+            showNotification(`Patch rescheduled to ${patch.schedule.toLocaleDateString()}`);
+        }
+
+        function rescheduleAll() {
+            if (appState.scheduledPatches.length === 0) {
+                showNotification('No patches to reschedule.');
+                return;
+            }
+            
+            // Move all patches forward by 7 days
+            appState.scheduledPatches.forEach(patch => {
+                patch.schedule = new Date(patch.schedule.getTime() + (7 * 24 * 60 * 60 * 1000));
+            });
+            
+            renderUpcomingPatches();
+            renderScheduledPatches();
+            
+            showNotification('All patches rescheduled by 7 days.');
+        }
+
+        // Scanning and Reporting Functions
+        function scanForPatches() {
+            showNotification('Scanning for new patches...');
+            
+            // Simulate scan delay
+            setTimeout(() => {
+                // Add a random new patch
+                const newPatches = [
+                    { id: Date.now(), name: 'Microsoft Edge Update', severity: 'medium', status: 'pending', systems: 22, schedule: new Date(Date.now() + 86400000) },
+                    { id: Date.now() + 1, name: 'Windows Security Update', severity: 'high', status: 'pending', systems: 38, schedule: new Date(Date.now() + 172800000) }
+                ];
+                
+                newPatches.forEach(patch => {
+                    appState.patches.push(patch);
+                    appState.scheduledPatches.push(patch);
+                    
+                    if (patch.severity === 'critical' || patch.severity === 'high') {
+                        appState.criticalPatches.push(patch);
+                    }
+                });
+                
+                renderUpcomingPatches();
+                renderCriticalPatches();
+                renderScheduledPatches();
+                updateDashboard();
+                
+                showNotification(`Found ${newPatches.length} new patches!`);
+            }, 3000);
+        }
+
+        function viewPatchDetails(patchId) {
+            const patch = appState.patches.find(p => p.id === patchId) || 
+                         appState.appliedPatches.find(p => p.id === patchId);
+            
+            if (!patch) return;
+            
+            alert(`Patch Details:\n\nName: ${patch.name}\nSeverity: ${patch.severity}\nSystems: ${patch.systems}\nStatus: ${patch.status}\n${patch.description ? `Description: ${patch.description}` : ''}`);
+        }
+
+        // Report Generation Functions
+        function generateReport() {
+            showNotification('Generating compliance report...');
+            // In a real application, this would generate and download a PDF
+        }
+
+        function generateComplianceReport() {
+            showNotification('Generating compliance report...');
+        }
+
+        function generateSecurityReport() {
+            showNotification('Generating security posture report...');
+        }
+
+        function generatePerformanceReport() {
+            showNotification('Generating performance report...');
+        }
+
+        function generateExecutiveReport() {
+            showNotification('Generating executive summary...');
+        }
+
+        function exportHistory() {
+            showNotification('Exporting patch history...');
+        }
+
+        // Utility Functions
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background-color: rgba(76, 175, 80, 0.9);
+                color: white;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 1000;
+                font-weight: 600;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

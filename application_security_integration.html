@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Security Integration</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #FF4500, #FF6347); }
+            50% { background: linear-gradient(to right, #FF8C00, #FFA07A); }
+            100% { background: linear-gradient(to right, #FF4500, #FF6347); }
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .button {
+            display: block;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Application Security Integration</h1>
+        <p>Ensure application security by educating developers and enforcing secure database access.</p>
+        <div class="features">
+            <div class="feature">
+                <h3>Secure Coding Practices</h3>
+                <p>Educate developers on secure coding techniques to prevent vulnerabilities.</p>
+                <a href="secure_coding.html" class="button">View Guidelines</a>
+            </div>
+            <div class="feature">
+                <h3>Secure API Access</h3>
+                <p>Implement safe API access methods to protect sensitive database connections.</p>
+                <a href="secure_api_access.html" class="button">Learn About API Security</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

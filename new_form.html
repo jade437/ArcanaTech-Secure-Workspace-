@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Form Builder</title>
+    <style>
+        /* 🎨 Stylish UI with Animations */
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(to right, #4b6cb7, #182848);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #4b6cb7, #182848); }
+            50% { background: linear-gradient(to right, #3a7bd5, #3a6073); }
+            100% { background: linear-gradient(to right, #4b6cb7, #182848); }
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .field-container {
+            margin-bottom: 15px;
+            text-align: left;
+            animation: popIn 0.6s ease-in-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .input-field, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .input-field:focus, textarea:focus {
+            transform: scale(1.05);
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: linear-gradient(to right, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button:hover {
+            background: linear-gradient(to right, #45a049, #4CAF50);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>✨ Dynamic Form Builder ✨</h2>
+        <p>Create, customize, and **save** forms interactively! 🚀</p>
+
+        <label for="fieldType">Select Field Type:</label>
+        <select id="fieldType">
+            <option value="text">Text</option>
+            <option value="email">Email</option>
+            <option value="tel">Phone</option>
+            <option value="number">Number</option>
+            <option value="textarea">Paragraph Text</option>
+        </select>
+
+        <input type="text" id="fieldLabel" placeholder="Field Label">
+        <button class="button" onclick="addField()">Add Field</button>
+        <button class="button" onclick="saveForm()">💾 Save Form</button>
+        <button class="button" onclick="loadForm()">🔄 Load Saved Form</button>
+
+        <form id="dynamicForm">
+            <button type="submit" class="button">🚀 Submit Form</button>
+        </form>
+    </div>
+
+    <script>
+        function addField() {
+            const fieldType = document.getElementById("fieldType").value;
+            const fieldLabel = document.getElementById("fieldLabel").value;
+
+            if (fieldLabel.trim() === "") {
+                alert("Please enter a field label.");
+                return;
+            }
+
+            const fieldContainer = document.createElement("div");
+            fieldContainer.className = "field-container";
+
+            const label = document.createElement("label");
+            label.innerText = fieldLabel;
+
+            let input;
+            if (fieldType === "textarea") {
+                input = document.createElement("textarea");
+                input.rows = 4;
+            } else {
+                input = document.createElement("input");
+                input.type = fieldType;
+                input.className = "input-field";
+            }
+            input.name = fieldLabel.toLowerCase().replace(/\s+/g, '_');
+
+            fieldContainer.appendChild(label);
+            fieldContainer.appendChild(input);
+            document.getElementById("dynamicForm").insertBefore(fieldContainer, document.getElementById("dynamicForm").lastChild);
+        }
+
+        function saveForm() {
+            localStorage.setItem("savedForm", document.getElementById("dynamicForm").innerHTML);
+            alert("✨ Form saved successfully! ✨");
+        }
+
+        function loadForm() {
+            const savedForm = localStorage.getItem("savedForm");
+            if (savedForm) {
+                document.getElementById("dynamicForm").innerHTML = savedForm;
+                alert("🔄 Saved form loaded!");
+            } else {
+                alert("⚠️ No saved form found.");
+            }
+        }
+    </script>
+</body>
+</html>

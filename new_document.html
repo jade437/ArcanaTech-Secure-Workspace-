@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Document Editor</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #FAFAFA;
+            color: #333;
+            padding: 20px;
+        }
+
+        #editor {
+            width: 80%;
+            margin: auto;
+            min-height: 500px;
+            padding: 20px;
+            border: 2px solid #0056b3;
+            background-color: #fff;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        select {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center;">🚀 Advanced Document Editor 🚀</h1>
+
+    <div class="toolbar">
+        <button class="btn" onclick="formatText('bold')">Bold</button>
+        <button class="btn" onclick="formatText('italic')">Italic</button>
+        <button class="btn" onclick="formatText('underline')">Underline</button>
+        <button class="btn" onclick="formatText('justifyCenter')">Center Text</button>
+        <button class="btn" onclick="formatText('justifyLeft')">Left Align</button>
+        <button class="btn" onclick="formatText('justifyRight')">Right Align</button>
+        <button class="btn" onclick="formatText('insertOrderedList')">Numbered List</button>
+        <button class="btn" onclick="formatText('insertUnorderedList')">Bullet Points</button>
+        <button class="btn" onclick="formatText('foreColor', '#ff0000')">Red Text</button>
+        <button class="btn" onclick="formatText('hiliteColor', 'yellow')">Highlight</button>
+        <button class="btn" onclick="exportPDF()">Export to PDF</button>
+        <button class="btn" onclick="exportDoc()">Export to .docx</button>
+    </div>
+
+    <div id="editor" contenteditable="true">
+        📝 **Start typing your document here...**
+    </div>
+
+    <script>
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        function exportPDF() {
+            alert("🚀 PDF Export coming soon!");
+            // Future implementation for exporting content as PDF
+        }
+
+        function exportDoc() {
+            alert("🚀 .docx Export coming soon!");
+            // Future implementation for exporting content as .docx
+        }
+    </script>
+
+</body>
+</html>

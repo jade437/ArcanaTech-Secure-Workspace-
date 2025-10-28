@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Factor Authentication Login</title>
+    <!-- Load Google API client library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #FF4500, #FF6347); }
+            50% { background: linear-gradient(to right, #FF8C00, #FFA07A); }
+            100% { background: linear-gradient(to right, #FF4500, #FF6347); }
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+            position: relative;
+        }
+
+        .form-container img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        .form-container input, .form-container button {
+            width: 90%;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px auto;
+        }
+
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: rgba(250, 240, 240, 0.32);
+        }
+
+        #mfaDiv {
+            display: none;
+        }
+
+        /* Honeypot Fields - Hidden */
+        .honeypot {
+            position: absolute;
+            left: -9999px;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            z-index: -1;
+        }
+
+        /* Fake hidden elements that look like security fields */
+        .fake-security {
+            position: absolute;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        /* Time-based honeypot */
+        #timeCheck {
+            display: none;
+        }
+
+        /* Google Sign-In Button Styling */
+        #googleSignIn {
+            width: 90%;
+            margin: 10px auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .or-divider::before, .or-divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .or-divider span {
+            padding: 0 10px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <!-- Logo -->
+        <img src="img.png" alt="Company Logo">
+
+        <h1>ArcanaTech Login</h1>
+
+        <!-- ======================== -->
+        <!-- MULTI-LAYER HONEYPOT SYSTEM -->
+        <!-- ======================== -->
+        
+        <!-- 1. Traditional Honeypot Fields -->
+        <input type="text" class="honeypot" id="fake_username" name="fake_username" autocomplete="off">
+        <input type="password" class="honeypot" id="fake_password" name="fake_password" autocomplete="off">
+        
+        <!-- 2. Fake Security Fields (visible to bots but hidden to humans) -->
+        <div class="fake-security">
+            <input type="text" id="security_token" name="security_token" value="">
+            <input type="hidden" id="csrf_token" name="csrf_token" value="fake-csrf-token-12345">
+        </div>
+        
+        <!-- 3. Time-based Honeypot (checks if form submitted too quickly) -->
+        <input type="hidden" id="timeCheck" name="timeCheck" value="">
+        
+        <!-- 4. Browser Behavior Check (real users will have this filled by JS) -->
+        <input type="hidden" id="jsCheck" name="jsCheck" value="false">
+        
+        <!-- 5. Fake CAPTCHA that looks real but isn't functional -->
+        <div class="fake-security" id="fakeCaptcha">
+            <div style="background-color: #f1f1f1; padding: 10px; border-radius: 4px; color: #000;">
+                <p>Security Check: Please confirm you're not a robot</p>
+                <div style="display: flex; justify-content: center;">
+                    <input type="checkbox" id="not_a_robot" name="not_a_robot" value="1">
+                    <label for="not_a_robot" style="margin-left: 8px;">I'm not a robot</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================== -->
+        <!-- GOOGLE SIGN-IN BUTTON -->
+        <!-- ======================== -->
+        <div id="googleSignIn"></div>
+        
+        <div class="or-divider">
+            <span>OR</span>
+        </div>
+
+        <!-- ======================== -->
+        <!-- ACTUAL LOGIN FORM ELEMENTS -->
+        <!-- ======================== -->
+        
+        <!-- User Credentials -->
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        <button id="loginBtn">Login</button>
+        <p class="status" id="status"></p>
+
+        <!-- MFA Section -->
+        <div id="mfaDiv">
+            <h2>MFA Verification</h2>
+            <p>A verification code has been sent to your email/phone.</p>
+            <input type="text" id="mfaCode" placeholder="Enter the MFA code" required>
+            <button id="verifyBtn">Verify</button>
+        </div>
+    </div>
+
+    <script>
+        // Google OAuth credentials from your provided JSON
+        const GOOGLE_CLIENT_ID = '120249272041-bnfrma3fdp53un3hvk1rj90icg64cuvc.apps.googleusercontent.com';
+        const GOOGLE_CLIENT_SECRET = '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';
+        const GOOGLE_REDIRECT_URI = 'http://localhost';
+        
+        // Set timestamp when page loads
+        document.getElementById('timeCheck').value = new Date().getTime();
+        
+        // Fill JS check field (bots typically don't execute this)
+        document.getElementById('jsCheck').value = "true";
+        
+        // Add mouse movement tracker
+        let mouseMoved = false;
+        document.addEventListener('mousemove', () => {
+            mouseMoved = true;
+        });
+
+        // Initialize Google Sign-In
+        function initializeGoogleSignIn() {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleSignIn,
+                auto_select: false,
+                cancel_on_tap_outside: false
+            });
+            
+            google.accounts.id.renderButton(
+                document.getElementById("googleSignIn"),
+                {
+                    type: "standard",
+                    theme: "filled_blue",
+                    size: "large",
+                    text: "continue_with",
+                    shape: "rectangular",
+                    logo_alignment: "left"
+                }
+            );
+            
+            // Optional: Display the One Tap dialog
+            // google.accounts.id.prompt();
+        }
+
+        // Handle Google Sign-In response
+        function handleGoogleSignIn(response) {
+            console.log("Google sign-in response:", response);
+            
+            // Verify the credential with your backend in production
+            verifyGoogleToken(response.credential).then(userData => {
+                // Set the email in the form
+                document.getElementById('email').value = userData.email;
+                document.getElementById('status').textContent = `Signed in as ${userData.name}`;
+                
+                // For demo purposes, we'll simulate MFA
+                document.getElementById('mfaDiv').style.display = "block";
+                alert("Verification code sent to your email!");
+            }).catch(error => {
+                console.error("Token verification failed:", error);
+                document.getElementById('status').textContent = "Google sign-in failed. Please try again.";
+            });
+        }
+
+        // Simulate token verification (replace with actual backend call in production)
+        function verifyGoogleToken(credential) {
+            return new Promise((resolve, reject) => {
+                try {
+                    // In a real app, you would send this to your backend for verification
+                    // This is just client-side decoding for demonstration
+                    const payload = JSON.parse(atob(credential.split('.')[1]));
+                    
+                    // Basic validation
+                    if (!payload.email || !payload.name) {
+                        throw new Error("Invalid token payload");
+                    }
+                    
+                    resolve({
+                        email: payload.email,
+                        name: payload.name,
+                        picture: payload.picture,
+                        emailVerified: payload.email_verified
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function getUserIP(callback) {
+            fetch("https://api64.ipify.org?format=json")
+                .then(response => response.json())
+                .then(data => callback(data.ip))
+                .catch(() => callback("unknown"));
+        }
+
+        function logBotActivity(ip, reason) {
+            let logs = JSON.parse(localStorage.getItem("botLogs")) || [];
+            let attempts = JSON.parse(localStorage.getItem("failedAttempts")) || {};
+            let fingerprints = JSON.parse(localStorage.getItem("botFingerprints")) || [];
+
+            // Create a fingerprint of this "bot"
+            const fingerprint = {
+                ip,
+                userAgent: navigator.userAgent,
+                screenRes: `${window.screen.width}x${window.screen.height}`,
+                plugins: Array.from(navigator.plugins || []).map(p => p.name).join(','),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                reason: reason
+            };
+
+            attempts[ip] = (attempts[ip] || 0) + 1;
+            fingerprints.push(fingerprint);
+            
+            localStorage.setItem("failedAttempts", JSON.stringify(attempts));
+            localStorage.setItem("botLogs", JSON.stringify(logs));
+            localStorage.setItem("botFingerprints", JSON.stringify(fingerprints));
+
+            checkForBan(ip, attempts[ip]);
+        }
+
+        function checkForBan(ip, attemptCount) {
+            const maxAttempts = 3;
+            let bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+
+            if (attemptCount >= maxAttempts && !bannedIPs.includes(ip)) {
+                bannedIPs.push(ip);
+                localStorage.setItem("bannedIPs", JSON.stringify(bannedIPs));
+                alert(`🚨 IP ${ip} has been automatically banned due to suspicious activity!`);
+            }
+        }
+
+        function isIPBanned(callback) {
+            getUserIP(ip => {
+                let bannedIPs = JSON.parse(localStorage.getItem("bannedIPs")) || [];
+                callback(bannedIPs.includes(ip));
+            });
+        }
+
+        function detectBot() {
+            // Check honeypot fields
+            const honeypotFakeUser = document.getElementById('fake_username').value;
+            const honeypotFakePass = document.getElementById('fake_password').value;
+            
+            // Check fake security fields
+            const securityToken = document.getElementById('security_token').value;
+            const fakeCaptchaChecked = document.getElementById('not_a_robot').checked;
+            
+            // Check time-based submission (less than 3 seconds is suspicious)
+            const submitTime = new Date().getTime();
+            const loadTime = parseInt(document.getElementById('timeCheck').value);
+            const formFillTime = submitTime - loadTime;
+            
+            // Check JavaScript field
+            const jsCheck = document.getElementById('jsCheck').value;
+            
+            // Check mouse movement
+            const hadMouseMovement = mouseMoved;
+            
+            // If any honeypot triggered, it's likely a bot
+            if (honeypotFakeUser || honeypotFakePass || securityToken || fakeCaptchaChecked) {
+                return "honeypot_triggered";
+            }
+            
+            // If form filled too quickly (less than 3 seconds)
+            if (formFillTime < 3000) {
+                return "form_filled_too_fast";
+            }
+            
+            // If JavaScript check failed
+            if (jsCheck !== "true") {
+                return "javascript_disabled";
+            }
+            
+            // If no mouse movement detected
+            if (!hadMouseMovement) {
+                return "no_mouse_movement";
+            }
+            
+            return false;
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            isIPBanned(banned => {
+                if (banned) {
+                    alert("🚫 Access Denied! Your IP has been banned due to suspicious activity.");
+                    return;
+                }
+
+                // Run bot detection
+                const botDetectionResult = detectBot();
+                
+                if (botDetectionResult) {
+                    getUserIP(ip => {
+                        logBotActivity(ip, botDetectionResult);
+                        document.getElementById('status').textContent = "🚨 Suspicious activity detected!";
+                        
+                        // Redirect bots to a decoy page
+                        setTimeout(() => {
+                            window.location.href = "bot_trap.html";
+                        }, 1500);
+                    });
+                    return;
+                }
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                if (email === "jade@gmail.com" && password === "password123") {
+                    document.getElementById('status').textContent = "";
+                    document.getElementById('mfaDiv').style.display = "block";
+                    alert("Verification code sent to your email/phone!");
+                } else {
+                    document.getElementById('status').textContent = "Invalid email or password!";
+                    getUserIP(ip => logBotActivity(ip, "invalid_credentials"));
+                }
+            });
+        });
+
+        document.getElementById('verifyBtn').addEventListener('click', () => {
+            const mfaCode = document.getElementById('mfaCode').value;
+            if (mfaCode === "123456") {
+                alert("Login successful!");
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Invalid MFA code!");
+            }
+        });
+        
+        // Initialize Google Sign-In when the Google API library is loaded
+        window.onload = function() {
+            // Check if the Google API is loaded
+            if (typeof google !== 'undefined') {
+                initializeGoogleSignIn();
+            } else {
+                // Retry after a short delay if not loaded yet
+                setTimeout(initializeGoogleSignIn, 500);
+            }
+        };
+    </script>
+
+</body>
+</html>

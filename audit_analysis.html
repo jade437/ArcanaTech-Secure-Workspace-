@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Analysis</title>
+    <style>
+        /* Reusing Dashboard CSS */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #FF4500, #FF6347); }
+            50% { background: linear-gradient(to right, #FF8C00, #FFA07A); }
+            100% { background: linear-gradient(to right, #FF4500, #FF6347); }
+        }
+
+        .analysis-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .analysis-container:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .analysis {
+            text-align: left;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            color: #FFFFFF;
+            max-width: 700px;
+        }
+
+        .analysis h3 {
+            margin-bottom: 10px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="analysis-container">
+        <h1>Audit Analysis</h1>
+        <p>Evaluate and analyze comprehensive audit logs to ensure security and compliance.</p>
+        
+        <!-- Section for Log Summary -->
+        <div class="analysis" id="log-summary">
+            <h3>Summary of Audit Logs:</h3>
+            <ul>
+                <li>Total Logins Recorded: <strong>250</strong></li>
+                <li>Queries Executed: <strong>1800</strong></li>
+                <li>Schema Changes: <strong>15</strong></li>
+                <li>Unauthorized Attempts: <strong>2</strong></li>
+            </ul>
+        </div>
+
+        <!-- Section for Risk Analysis -->
+        <div class="analysis" id="risk-analysis">
+            <h3>Risk Analysis:</h3>
+            <ul>
+                <li>High-Risk Queries Identified: <strong>5</strong></li>
+                <li>Potential Data Breaches Detected: <strong>0</strong></li>
+                <li>Critical Vulnerabilities Found: <strong>3</strong></li>
+                <li>Accounts Flagged for Review: <strong>4</strong></li>
+            </ul>
+        </div>
+
+        <!-- Section for Recommendations -->
+        <div class="analysis" id="recommendations">
+            <h3>Recommendations:</h3>
+            <ul>
+                <li>Implement stricter access controls for sensitive data.</li>
+                <li>Schedule immediate patching for critical vulnerabilities.</li>
+                <li>Enhance monitoring for high-risk accounts.</li>
+                <li>Introduce AI-driven threat detection for live audits.</li>
+            </ul>
+        </div>
+
+        <!-- Action Button -->
+        <button class="button" onclick="alert('Audit Analysis Complete!')">Complete Analysis</button>
+    </div>
+</body>
+</html>

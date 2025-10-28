@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honeypot Trap</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #0044CC, #0088FF);
+            color: #FFFFFF;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .form-container img {
+            max-width: 120px;
+            margin-bottom: 20px;
+        }
+
+        .form-container input,
+        .form-container button {
+            width: 90%;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px auto;
+        }
+
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Hide honeypot fields */
+        .honeypot {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <!-- Logo -->
+        <img src="img.png" alt="Company Logo">
+
+        <h2>Honeypot Login</h2>
+
+        <!-- Honeypot Fields -->
+        <input type="text" class="honeypot" id="fake_username" autocomplete="on">
+        <input type="password" class="honeypot" id="fake_password" autocomplete="on">
+
+        <!-- Real User Credentials -->
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <button type="submit" id="loginBtn">Login</button>
+        <p class="status" id="status"></p>
+    </div>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent form refresh
+            
+            // Honeypot field detection
+            const honeypotFakeUser = document.getElementById('fake_username').value;
+            const honeypotFakePass = document.getElementById('fake_password').value;
+
+            if (honeypotFakeUser || honeypotFakePass) {
+                document.getElementById('status').textContent = "🚨 Bot activity detected!";
+                console.warn("Bot detected, blocking access...");
+                return;
+            }
+
+            document.getElementById('status').textContent = "Login attempt successful!";
+        });
+    </script>
+
+</body>
+</html>

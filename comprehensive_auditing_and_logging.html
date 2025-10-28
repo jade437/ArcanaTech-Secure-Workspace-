@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Auditing & Logging</title>
+    <style>
+        /* Reusing Dashboard CSS */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: #FFFFFF;
+            animation: gradientShift 10s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background: linear-gradient(to right, #FF4500, #FF6347); }
+            50% { background: linear-gradient(to right, #FF8C00, #FFA07A); }
+            100% { background: linear-gradient(to right, #FF4500, #FF6347); }
+        }
+
+        .audit-container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .audit-container:hover {
+            transform: scale(1.02);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .feature {
+            text-align: left;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="audit-container">
+        <h1>Comprehensive Auditing & Logging</h1>
+        <p>Enhance security and visibility across your databases with robust auditing and monitoring capabilities.</p>
+
+        <div class="feature">
+            <h3>Detailed Audit Logging</h3>
+            <p>Track all database activities, including logins, queries, data modifications, and schema changes.</p>
+            <a href="audit_logs.html" class="button">View Audit Logs</a>
+        </div>
+
+        <div class="feature">
+            <h3>Secure Log Storage</h3>
+            <p>Ensure audit logs are securely stored and protected from tampering or unauthorized access.</p>
+            <a href="log_storage.html" class="button">Access Secure Logs</a>
+        </div>
+
+        <div class="feature">
+            <h3>Real-Time Monitoring</h3>
+            <p>Enable real-time alerts for suspicious activities and critical security events.</p>
+            <a href="real_time_monitoring.html" class="button">Monitor Activities</a>
+        </div>
+    </div>
+</body>
+</html>

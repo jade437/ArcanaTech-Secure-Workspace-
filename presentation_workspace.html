@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Workspace</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00);
+            color: #FFFFFF;
+        }
+
+        .workspace-container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide {
+            width: 80%;
+            height: 300px;
+            margin: 10px auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            color: black;
+            text-align: left;
+            position: relative;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            margin: 5px;
+        }
+
+        .button:hover {
+            background: #45a049;
+        }
+
+        .toolbar {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .toolbar button {
+            padding: 8px 12px;
+            background: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .toolbar button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="workspace-container">
+        <h1>🚀 Interactive Presentation Workspace 🚀</h1>
+        <p>Create, customize, edit, save & export professional slides!</p>
+
+        <button class="button" onclick="addSlide()">➕ Add New Slide</button>
+        <button class="button" onclick="savePresentation()">💾 Save Presentation</button>
+        <button class="button" onclick="loadPresentation()">🔄 Load Saved Presentation</button>
+        <button class="button" onclick="exportToPDF()">📄 Export to PDF</button>
+        <button class="button" onclick="exportToHTML()">🌐 Save as HTML</button>
+
+        <div class="toolbar">
+            <button onclick="formatText('bold')">Bold</button>
+            <button onclick="formatText('italic')">Italic</button>
+            <button onclick="formatText('underline')">Underline</button>
+            <button onclick="changeBackground()">Change Background</button>
+            <button onclick="uploadImage()">Insert Image</button>
+        </div>
+
+        <div id="slidesContainer"></div>
+    </div>
+
+    <script>
+        function addSlide() {
+            let slide = document.createElement("div");
+            slide.className = "slide";
+            slide.contentEditable = "true";
+            slide.innerText = "📝 Edit this slide...";
+            document.getElementById("slidesContainer").appendChild(slide);
+        }
+
+        function savePresentation() {
+            localStorage.setItem("presentationData", document.getElementById("slidesContainer").innerHTML);
+            alert("✨ Presentation saved!");
+        }
+
+        function loadPresentation() {
+            const savedData = localStorage.getItem("presentationData");
+            if (savedData) {
+                document.getElementById("slidesContainer").innerHTML = savedData;
+                alert("🔄 Presentation loaded!");
+            } else {
+                alert("⚠️ No saved presentation found.");
+            }
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF();
+            let slides = document.querySelectorAll('.slide');
+            slides.forEach((slide, index) => {
+                if (index > 0) doc.addPage();
+                doc.text(slide.innerText, 10, 20);
+            });
+            doc.save("presentation.pdf");
+        }
+
+        function exportToHTML() {
+            let htmlContent = document.getElementById("slidesContainer").innerHTML;
+            let blob = new Blob([htmlContent], { type: "text/html" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "presentation.html";
+            link.click();
+        }
+
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        function changeBackground() {
+            let slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => {
+                slide.style.backgroundColor = prompt("Enter background color (e.g., lightblue, #ff6347):");
+            });
+        }
+
+        function uploadImage() {
+            let url = prompt("Enter image URL:");
+            let slides = document.querySelectorAll('.slide');
+            slides.forEach(slide => {
+                let img = document.createElement("img");
+                img.src = url;
+                img.style.maxWidth = "100%";
+                slide.appendChild(img);
+            });
+        }
+    </script>
+
+</body>
+</html>

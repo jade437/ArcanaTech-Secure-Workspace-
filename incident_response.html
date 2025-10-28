@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Response Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to bottom, black, red);
+            color: white;
+        }
+        .dashboard-container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .button {
+            display: block;
+            margin: 15px auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Incident Response Dashboard</h1>
+        <p>Track and manage recent security incidents effectively.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Incident</th>
+                    <th>Date</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Action Taken</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Unauthorized Access</td>
+                    <td>2025-04-18</td>
+                    <td>High</td>
+                    <td>Resolved</td>
+                    <td>Blocked IP</td>
+                </tr>
+                <tr>
+                    <td>Malware Detected</td>
+                    <td>2025-04-17</td>
+                    <td>Critical</td>
+                    <td>In Progress</td>
+                    <td>Isolated System</td>
+                </tr>
+                <tr>
+                    <td>Phishing Attempt</td>
+                    <td>2025-04-15</td>
+                    <td>Moderate</td>
+                    <td>Resolved</td>
+                    <td>Warned User</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <a href="network_analysis.html" class="button">Analyze Network Traffic</a>
+        <a href="compliance_tracking.html" class="button">Check Compliance Status</a>
+    </div>
+</body>
+</html>

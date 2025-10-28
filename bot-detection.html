@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ORIGINAL STYLING PRESERVED */
+        body {
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(to right, #FF4500, #FF6347, #FF7F50, #FF8C00, #FFA07A);
+            color: white;
+            animation: gradientShift 10s ease infinite;
+        }
+        .dashboard-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.6);
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid white;
+        }
+        .button {
+            padding: 12px;
+            width: 95%;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <h1>🚨 Admin Dashboard - Bot Detection 🚨</h1>
+        <p>Monitor suspicious login activity and blocked bots.</p>
+
+        <table id="logTable">
+            <tr>
+                <th>IP Address</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+            </tr>
+        </table>
+
+        <button class="button" onclick="clearLogs()">🗑️ Clear Logs</button>
+        <button class="button" onclick="exportLogs()">📄 Export Logs</button>
+
+        <!-- Security Alerts -->
+        <p id="alertBox"></p>
+
+        <!-- Chart for login activity -->
+        <canvas id="botChart"></canvas>
+    </div>
+
+    <script>
+        function fetchLogs() {
+            fetch('fetch_logs.php')
+                .then(response => response.json())
+                .then(logs => {
+                    updateTable(logs);
+                });
+        }
+
+        function updateTable(logs) {
+            let table = document.getElementById("logTable");
+            table.innerHTML = `<tr>
+                <th>IP Address</th>
+                <th>Timestamp</th>
+                <th>Status</th>
+            </tr>`;
+            
+            logs.forEach(log => {
+                let row = table.insertRow();
+                row.insertCell(0).textContent = log.ip_address;
+                row.insertCell(1).textContent = log.timestamp;
+                row.insertCell(2).textContent = log.status;
+            });
+        }
+
+        function clearLogs() {
+            localStorage.removeItem("botLogs");
+            alert("🗑️ Logs cleared!");
+            location.reload();
+        }
+
+        function exportLogs() {
+            let logs = localStorage.getItem("botLogs");
+            let blob = new Blob([logs], { type: "text/plain" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "bot_logs.txt";
+            link.click();
+        }
+
+        function updateChart(logs) {
+            let ctx = document.getElementById("botChart").getContext("2d");
+            let botIPs = logs.map(log => log.ip_address);
+            let timestamps = logs.map(log => log.timestamp);
+
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: "Blocked Bots",
+                        data: botIPs.map(() => 1),
+                        backgroundColor: "#FF4500",
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        fetchLogs();
+    </script>
+
+</body>
+</html>
